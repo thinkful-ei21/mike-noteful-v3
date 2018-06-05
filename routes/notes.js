@@ -12,57 +12,95 @@ const Note = require('../models/note');
 
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/', (req, res, next) => {
-  return Note.find()
+  
+  const { searchTerm }= req.query;
+  let filter = {};
+
+  if (searchTerm) {
+    filter.title = { $regex: searchTerm };
+  }
+
+  Note
+    .find(filter)
+    .sort({  id: 1 })
     .then(results => {
-      res.json({
-        notes: results.map(
-          (results) => results.serialize())
-      });
+      res.json(results);
     })
     .catch(
       err => {
         console.error(err);
         res.status(500).json({message: 'Internal server error'});
       });
-
-  // console.log('Get All Notes');
-  // res.json([
-  //   { id: 1, title: 'Temp 1' },
-  //   { id: 2, title: 'Temp 2' },
-  //   { id: 3, title: 'Temp 3' }
-  // ]);
-
 });
+
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/:id', (req, res, next) => {
+  const noteId = req.params.id;
 
-  console.log('Get a Note');
-  res.json({ id: 1, title: 'Temp 1' });
-
+  Note.findById(noteId)
+    .then(results => {
+      res.json(results);
+    })
+    .then(() => {
+      return mongoose.disconnect();
+    })
+    .catch(err => {
+      res.error(`ERROR: ${err.message}`);
+      res.status(404).json({message: 'Note not found'});
+    });
 });
+
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
+  const noteId = req.params.id;
+  const { title, content } = req.body;
+  const newNote = {title, content};
 
-  console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
-
+  Note.create(newNote)
+    .then(results => {
+      res.json(results);
+      res.location('path/to/new/document').status(201).json(results);
+    })
+    .catch(err => {
+      res.error(`ERROR: ${err.message}`);
+      res.status(500).json({message: 'Internal server error'});
+    });
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+  const updatedNote = {title, content};
 
-  console.log('Update a Note');
-  res.json({ id: 1, title: 'Updated Temp 1' });
-
+  Note.findByIdAndUpdate(id, updatedNote, { upsert: true, new: true})
+    .then(results => {
+      if(results) {
+        res.json(results);
+      } else {
+        next();
+      }
+    })
+    .catch(err => {
+      res.error(`ERROR: ${err.message}`);
+      res.status(500).json({message: 'Internal server error'});
+    });
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
-
-  console.log('Delete a Note');
-  res.status(204).end();
+  const { id } = req.params;
+  Note.findByIdAndDelete(id)
+    .then(results => {
+      res.json({message: `Note ${results.title} Deleted Sucessfully`});
+      res.status(200).end();
+    })
+    .catch(err => {
+      res.status(500).json({message: 'Internal server error'});
+    });
 });
+
 
 module.exports = router;
