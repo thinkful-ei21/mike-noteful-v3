@@ -4,15 +4,33 @@ const express = require('express');
 
 const router = express.Router();
 
+const mongoose = require('mongoose');
+const { MONGODB_URI } = require('../config');
+
+const Note = require('../models/note');
+
+
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/', (req, res, next) => {
+  return Note.find()
+    .then(results => {
+      res.json({
+        notes: results.map(
+          (results) => results.serialize())
+      });
+    })
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Internal server error'});
+      });
 
-  console.log('Get All Notes');
-  res.json([
-    { id: 1, title: 'Temp 1' },
-    { id: 2, title: 'Temp 2' },
-    { id: 3, title: 'Temp 3' }
-  ]);
+  // console.log('Get All Notes');
+  // res.json([
+  //   { id: 1, title: 'Temp 1' },
+  //   { id: 2, title: 'Temp 2' },
+  //   { id: 3, title: 'Temp 3' }
+  // ]);
 
 });
 
