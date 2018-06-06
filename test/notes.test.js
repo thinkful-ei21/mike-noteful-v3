@@ -154,7 +154,6 @@ describe('PUT /api/notes', function() {
         })
         .then(function(res) {
           expect(res).to.have.status(200);
-          console.log(noteToDelete);
           return Note.findById(noteToDelete.id);
         })
         .then(function(_noteToDelete) {
