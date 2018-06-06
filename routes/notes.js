@@ -28,8 +28,7 @@ router.get('/', (req, res, next) => {
     })
     .catch(
       err => {
-        console.error(err);
-        res.status(500).json({message: 'Internal server error'});
+        next(err);
       });
 });
 
@@ -46,8 +45,7 @@ router.get('/:id', (req, res, next) => {
       return mongoose.disconnect();
     })
     .catch(err => {
-      res.error(`ERROR: ${err.message}`);
-      res.status(404).json({message: 'Note not found'});
+      next(err);
     });
 });
 
@@ -56,16 +54,25 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   const noteId = req.params.id;
   const { title, content } = req.body;
+
+  /***** Never trust users - validate input *****/
+  if (!title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
   const newNote = {title, content};
+
+  const originalUrl = `http://${req.headers.host}/notes/${newNote.id}`;
 
   Note.create(newNote)
     .then(results => {
       res.json(results);
-      res.location('path/to/new/document').status(201).json(results);
+      res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
     })
     .catch(err => {
-      res.error(`ERROR: ${err.message}`);
-      res.status(500).json({message: 'Internal server error'});
+      next(err);
     });
 });
 
@@ -73,7 +80,22 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { title, content } = req.body;
-  const updatedNote = {title, content};
+
+  /***** Never trust users - validate input *****/
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('The `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  if (!title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+
+  const updatedNote = { title, content };
 
   Note.findByIdAndUpdate(id, updatedNote, { upsert: true, new: true})
     .then(results => {
@@ -84,21 +106,29 @@ router.put('/:id', (req, res, next) => {
       }
     })
     .catch(err => {
-      res.error(`ERROR: ${err.message}`);
-      res.status(500).json({message: 'Internal server error'});
+      next(err);
     });
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
+
+
+  /***** Never trust users - validate input *****/
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('The `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
   Note.findByIdAndDelete(id)
     .then(results => {
       res.json({message: `Note ${results.title} Deleted Sucessfully`});
       res.status(200).end();
     })
     .catch(err => {
-      res.status(500).json({message: 'Internal server error'});
+      next(err);
     });
 });
 
