@@ -1,2 +1,9 @@
 language: node_js
 node_js: node
+deploy:
+  provider: heroku
+  api_key:
+    secure: HYbiZV8zYqbKiOxio+SvqDWYvZqEG+BmjF27aZSvhrUDA9LlYJgqWN1qPq/2sgoDQNux0mEX/dkTDPJwsQMIJGXIAbliqXoY5TWxet0whzxKoneMRbq3gkmBoL/2jHEA1k6OY0Q3KQpbTYAYwX5NvhLu2x1Nzn8S7ZVJ8eEtXzJQaesdBfQ5YHMsBZuAPcnBjui0aLX9CS63aYQlFIhRSbv8b8iEu1AH4KaRnAaG5zgrQ4J3tfhZpaGCyN7RVQr36rcKGp9BiRbrl6OZhtZqXfGXUAPHmsDvQOwtFyXJEe/5/k90qMq4nWCuTtJ33aRNyQ7+fnUe+Ob6TryriFN6q+/WLykjQYab/3HhKeUD0cX1LvuOXh8WS+jd15/RfmP8WYPd2T7b8U5ag12xAYw3tgd2KvwxlIx+Fdr9rzwVmUmkkM4MZThsPurW2NHoRr3mK80BkanRBYiT26NjRc9QOfI7pKBExpYpo+6PbemjLv2Ahcv9VeZFBxZZqwl3qyT/98MlKBdkdxyt7zOXaw0KeJJ+BJZmYaC3FOTWeL/Ox3HTvsTD2A1L/6ScRXra+fQmyb4nC5XvRCi+bGPy171+f9F1RzEMfroR8aKAtpthYHsuJXdLVdp8NBOHY0h2z/6oiYi5bDEImIAtW3Axf5GrUyV8QeeRC8y69H5NlIWUf1M=
+  app: noteful-app-v3-testing
+  on:
+    repo: thinkful-ei21/mike-noteful-v3
