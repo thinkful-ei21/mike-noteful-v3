@@ -47,9 +47,6 @@ router.get('/:id', (req, res, next) => {
     .then(results => {
       res.json(results);
     })
-    .then(() => {
-      return mongoose.disconnect();
-    })
     .catch(err => {
       next(err);
     });
@@ -61,7 +58,7 @@ router.post('/', (req, res, next) => {
   const noteId = req.params.id;
   const { title, content } = req.body;
 
-  /***** Never trust users - validate input *****/
+  // validate input 
   if (!title) {
     const err = new Error('Missing `title` in request body');
     err.status = 400;
@@ -74,7 +71,7 @@ router.post('/', (req, res, next) => {
 
   Note.create(newNote)
     .then(results => {
-      res.json(results);
+      //res.json(results);
       res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
     })
     .catch(err => {
@@ -87,7 +84,7 @@ router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { title, content } = req.body;
 
-  /***** Never trust users - validate input *****/
+  // validate input
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
     err.status = 400;
@@ -106,7 +103,7 @@ router.put('/:id', (req, res, next) => {
   Note.findByIdAndUpdate(id, updatedNote, { upsert: true, new: true})
     .then(results => {
       if(results) {
-        res.json(results);
+        res.status(204).json(results);
       } else {
         next();
       }
@@ -121,7 +118,7 @@ router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
 
 
-  /***** Never trust users - validate input *****/
+  // validate input 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
     err.status = 400;
@@ -137,6 +134,5 @@ router.delete('/:id', (req, res, next) => {
       next(err);
     });
 });
-
 
 module.exports = router;
