@@ -105,7 +105,6 @@ describe('POST /api/notes', function () {
       .send(newItem)
       .then(function (_res) {
         res = _res;
-        console.log(res.body);
         expect(res).to.have.status(201);
         expect(res).to.have.header('location');
         expect(res).to.be.json;
@@ -118,7 +117,6 @@ describe('POST /api/notes', function () {
       .then(data => {
         expect(res.body.title).to.equal(data.title);
         expect(res.body.content).to.equal(data.content);
-       // expect(res.body.folderId).to.equal(data.content);
       });
   });
 });
