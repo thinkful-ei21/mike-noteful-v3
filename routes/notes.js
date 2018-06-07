@@ -103,7 +103,7 @@ router.put('/:id', (req, res, next) => {
   Note.findByIdAndUpdate(id, updatedNote, { upsert: true, new: true})
     .then(results => {
       if(results) {
-        res.status(204).json(results);
+        res.status(200).json(results);
       } else {
         next();
       }

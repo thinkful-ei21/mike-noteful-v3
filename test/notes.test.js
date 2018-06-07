@@ -113,53 +113,55 @@ describe('POST /api/notes', function () {
   });
 });
 
-describe('PUT /api/notes', function() {
+describe('PUT /api/notes:id', function() {
   it('should update the note', function() {
     const updatedNote = {
-      title: 'An updated Note',
-      content: 'This is an updated note'
+      'title': 'An updated Note',
+      'content': 'This is an updated note'
     };
     let note;
-    return Note
-      .findOne()
+    return Note.findOne()
       .then(_note => {
         note = _note;
-        updatedNote.id = note.id;
+        updatedNote.id = _note.id;
         return chai.request(app)
-          .put(`/api/notes/${note.id}`)
+          .put(`/api/notes/${updatedNote.id}`)
           .send(updatedNote);
       })
       .then(function(res) {
-        expect(res).to.have.status(204);
-        return Note.findById(updatedNote.id);
+        expect(res).to.have.status(200);
+        expect(res).to.be.json;
+        expect(res.body).to.be.a('object');
+        expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        return Note.findById(res.body.id);
       })
       .then(function(note) {
-        expect(updatedNote.title).to.equal(updatedNote.title);
-        expect(updatedNote.content).to.equal(updatedNote.content);
+        expect(note.id).to.equal(updatedNote.id);
+        expect(note.title).to.equal(updatedNote.title);
+        expect(note.content).to.equal(updatedNote.content);
       });
   });
+});
 
 
-  describe('DELETE /api/notes', function() {
+describe('DELETE /api/notes', function() {
 
-    it('delete a note by id', function() {
+  it('delete a note by id', function() {
 
-      let noteToDelete;
+    let noteToDelete;
 
-      return Note
-        .findOne()
-        .then(function(_noteToDelete) {
-          noteToDelete = _noteToDelete;
-          return chai.request(app).delete(`/api/notes/${noteToDelete.id}`);
-        })
-        .then(function(res) {
-          expect(res).to.have.status(200);
-          return Note.findById(noteToDelete.id);
-        })
-        .then(function(_noteToDelete) {
-          expect(_noteToDelete).to.be.null;
-        });
-    });
+    return Note
+      .findOne()
+      .then(function(_noteToDelete) {
+        noteToDelete = _noteToDelete;
+        return chai.request(app).delete(`/api/notes/${noteToDelete.id}`);
+      })
+      .then(function(res) {
+        expect(res).to.have.status(200);
+        return Note.findById(noteToDelete.id);
+      })
+      .then(function(_noteToDelete) {
+        expect(_noteToDelete).to.be.null;
+      });
   });
-
 });

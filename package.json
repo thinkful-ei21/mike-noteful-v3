@@ -9,9 +9,10 @@
 	"main": "server.js",
 	"scripts": {
 		"start": "node server.js",
-		"test": "cross-env NODE_ENV=test mocha"
+		"test": "cross-env NODE_ENV=test mocha --file test/server.js"
 	},
 	"dependencies": {
+		"dotenv": "^6.0.0",
 		"express": "^4.16.3",
 		"mongoose": "^5.1.4",
 		"morgan": "^1.9.0"
