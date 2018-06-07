@@ -157,7 +157,7 @@ describe('DELETE /api/notes', function() {
         return chai.request(app).delete(`/api/notes/${noteToDelete.id}`);
       })
       .then(function(res) {
-        expect(res).to.have.status(200);
+        expect(res).to.have.status(204);
         return Note.findById(noteToDelete.id);
       })
       .then(function(_noteToDelete) {

@@ -71,7 +71,6 @@ router.post('/', (req, res, next) => {
 
   Note.create(newNote)
     .then(results => {
-      //res.json(results);
       res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
     })
     .catch(err => {
@@ -127,8 +126,7 @@ router.delete('/:id', (req, res, next) => {
 
   Note.findByIdAndDelete(id)
     .then(results => {
-      res.json({message: `Note ${results.title} Deleted Sucessfully`});
-      res.status(200).end();
+      res.status(204).end();
     })
     .catch(err => {
       next(err);
