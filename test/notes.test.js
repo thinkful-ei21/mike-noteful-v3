@@ -12,11 +12,18 @@ const app = require('../server');
 // and require config
 const { TEST_MONGODB_URI } = require('../config');
 
-// require note Mongoose model for Notes
+// require note Mongoose model for Note
 const Note = require('../models/note');
+
+
+// require note Mongoose model for Folder
+const Folder = require('../models/folder');
 
 // require seed notes from seed data 
 const seedNotes = require('../db/seed/notes');
+
+// require seed folders from seed data 
+const seedFolders = require('../db/seed/folders');
 
 //configure expect as your assertion library and load chai-http with chai.use()
 const expect = chai.expect;
@@ -73,7 +80,7 @@ describe('GET /api/notes/:id', function () {
         expect(res).to.have.status(200);
         expect(res).to.be.json;
         expect(res.body).to.be.an('object');
-        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        expect(res.body).to.have.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt');
 
         //compare database results to API response
         expect(res.body.id).to.equal(testNote.id);
@@ -87,7 +94,8 @@ describe('POST /api/notes', function () {
   it('should create and return a new item when provided valid data', function () {
     const newItem = {
       'title': 'The best article about cats ever!',
-      'content': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...'
+      'content': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...', 
+      'folderId': '111111111111111111111101'
     };
 
     let res;
@@ -97,11 +105,12 @@ describe('POST /api/notes', function () {
       .send(newItem)
       .then(function (_res) {
         res = _res;
+        console.log(res.body);
         expect(res).to.have.status(201);
         expect(res).to.have.header('location');
         expect(res).to.be.json;
         expect(res.body).to.be.a('object');
-        expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        expect(res.body).to.have.keys('id', 'title', 'content', 'folderId','createdAt', 'updatedAt');
         // 2) then call the database
         return Note.findById(res.body.id);
       })
@@ -109,6 +118,7 @@ describe('POST /api/notes', function () {
       .then(data => {
         expect(res.body.title).to.equal(data.title);
         expect(res.body.content).to.equal(data.content);
+       // expect(res.body.folderId).to.equal(data.content);
       });
   });
 });
@@ -117,7 +127,8 @@ describe('PUT /api/notes:id', function() {
   it('should update the note', function() {
     const updatedNote = {
       'title': 'An updated Note',
-      'content': 'This is an updated note'
+      'content': 'This is an updated note', 
+      'folderId': '111111111111111111111101'
     };
     let note;
     return Note.findOne()
@@ -132,7 +143,7 @@ describe('PUT /api/notes:id', function() {
         expect(res).to.have.status(200);
         expect(res).to.be.json;
         expect(res.body).to.be.a('object');
-        expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+        expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt');
         return Note.findById(res.body.id);
       })
       .then(function(note) {
