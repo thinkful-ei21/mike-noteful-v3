@@ -1,18 +1,18 @@
 [
   {
     "_id": "111111111111111111111100",
-    "name": "Archive"
+    "name": "To Do Today"
   },
   {
     "_id": "111111111111111111111101",
-    "name": "Drafts"
+    "name": "To Do This Week"
   },
   {
     "_id": "111111111111111111111102",
-    "name": "Personal"
+    "name": "In Process"
   },
   {
     "_id": "111111111111111111111103",
-    "name": "Work"
+    "name": "Done"
   }
 ]
