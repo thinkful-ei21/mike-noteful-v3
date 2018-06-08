@@ -1,39 +1,33 @@
 'use strict';
 
-// require chai, chai-http and mongoose packages
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
 
-// require app 
 const app = require('../server');
 
-//destructure the TEST_MONGODB_URI into a constant and require config
-// and require config
 const { TEST_MONGODB_URI } = require('../config');
 
-// require folder Mongoose model for Folders
-const Folder = require('../models/folder');
+const Tag = require('../models/tags');
 
-// require seed folders from seed data 
-const seedFolders = require('../db/seed/folders');
+const seedTags = require('../db/seed/tags.json');
 
 //configure expect as your assertion library and load chai-http with chai.use()
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-describe('Folders.test', function () {
-  // connect to the database before all tests
-  before(function () {
+describe('Tags.test', function() {
+  before(function() {
     return mongoose.connect(TEST_MONGODB_URI)
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
+
   //seed data runs before each test
   beforeEach(function () {
     return Promise.all([
-      Folder.insertMany(seedFolders),
-      Folder.createIndexes()
+      Tag.insertMany(seedTags),
+      Tag.createIndexes()
     ]); 
   });
 
@@ -47,24 +41,24 @@ describe('Folders.test', function () {
     return mongoose.disconnect();
   });
 
-  describe('Get /api/folders', function () {
-    it('should return all existing folders', function () {
+  describe('Get /api/tags', function () {
+    it('should return all existing tags', function () {
       let res;
       return chai.request(app)
-        .get('/api/folders')
+        .get('/api/tags')
         .then((_res) => {
           res = _res;
           expect(res).to.have.status(200);
           expect(res.body).to.have.lengthOf.at.least(1);
-          return Folder.count();
+          return Tag.count();
         })
         .then(count => expect(res.body).to.have.lengthOf(count));
     });
 
     it('should return a list with the correct fields and values', function () {
       return Promise.all([
-        Folder.find().sort('name'),
-        chai.request(app).get('/api/folders')
+        Tag.find().sort('name'),
+        chai.request(app).get('/api/tags')
       ])
         .then(([data, res]) => {
           expect(res).to.have.status(200);
@@ -83,16 +77,16 @@ describe('Folders.test', function () {
     });
   });
 
-  describe('GET /api/folders/:id', function () {
-    it('should return correct folder by id', function () {
-      let testFolder;
-      // call the database to get random folder
-      return Folder.findOne()
-        .then(aFolder => {
-          testFolder = aFolder;
+  describe('GET /api/tags/:id', function () {
+    it('should return correct tag by id', function () {
+      let testTag;
+      // call the database to get random tag
+      return Tag.findOne()
+        .then(aTag => {
+          testTag = aTag;
           // call the API with the ID
           return chai.request(app)
-            .get(`/api/folders/${testFolder.id}`);
+            .get(`/api/tags/${testTag.id}`);
         })
         .then((res) => {
           expect(res).to.have.status(200);
@@ -101,16 +95,16 @@ describe('Folders.test', function () {
           expect(res.body).to.have.keys('id', 'name', 'createdAt', 'updatedAt');
 
           //compare database results to API response
-          expect(res.body.id).to.equal(testFolder.id);
-          expect(res.body.name).to.equal(testFolder.name);
-          expect(new Date(res.body.createdAt)).to.eql(testFolder.createdAt);
-          expect(new Date(res.body.updatedAt)).to.eql(testFolder.updatedAt);
+          expect(res.body.id).to.equal(testTag.id);
+          expect(res.body.name).to.equal(testTag.name);
+          expect(new Date(res.body.createdAt)).to.eql(testTag.createdAt);
+          expect(new Date(res.body.updatedAt)).to.eql(testTag.updatedAt);
         });
     });
 
     it('should respond with a 400 for an invalid id', function () {
       return chai.request(app)
-        .get('/api/folders/NOT-A-VALID-ID')
+        .get('/api/tags/NOT-A-VALID-ID')
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.eq('The `id` is not valid');
@@ -120,7 +114,7 @@ describe('Folders.test', function () {
     it('should respond with a 404 for an ID that does not exist', function () {
       // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
-        .get('/api/folders/DOESNOTEXIST')
+        .get('/api/tags/DOESNOTEXIST')
         .then(res => {
           expect(res).to.have.status(404);
         });
@@ -128,17 +122,17 @@ describe('Folders.test', function () {
 
   });
 
-  describe('POST /api/folders', function () {
+  describe('POST /api/tags', function () {
     it('should create and return a new item when provided valid data', function () {
-      const newFolder = {
-        'name': 'test folder name'
+      const newTag = {
+        'name': 'test tag name'
       };
 
       let res;
       // 1) First, call the API
       return chai.request(app)
-        .post('/api/folders')
-        .send(newFolder)
+        .post('/api/tags')
+        .send(newTag)
         .then(function (_res) {
           res = _res;
           expect(res).to.have.status(201);
@@ -147,7 +141,7 @@ describe('Folders.test', function () {
           expect(res.body).to.be.a('object');
           expect(res.body).to.have.keys('id', 'name', 'createdAt', 'updatedAt');
           // 2) then call the database
-          return Folder.findById(res.body.id);
+          return Tag.findById(res.body.id);
         })
         // 3) then compare the API response to the database results
         .then(data => {
@@ -163,7 +157,7 @@ describe('Folders.test', function () {
         'foo': 'bar'
       };
       return chai.request(app)
-        .post('/api/folders')
+        .post('/api/tags')
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -174,44 +168,44 @@ describe('Folders.test', function () {
     });
 
     it('should return an error when given a duplicate name', function () {
-      return Folder.findOne()
+      return Tag.findOne()
         .then(data => {
           const newItem = { 'name': data.name };
-          return chai.request(app).post('/api/folders').send(newItem);
+          return chai.request(app).post('/api/tags').send(newItem);
         })
         .then(res => {
           expect(res).to.have.status(400);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('The folder name already exists');
+          expect(res.body.message).to.equal('The tag name already exists');
         });
     });
 
   });
-  describe('PUT /api/folders:id', function () {
-    it('should update the folder', function () {
-      const updatedFolder = {
-        'name': 'An updated Folder'
+  describe('PUT /api/tags:id', function () {
+    it('should update the tag', function () {
+      const updatedTag = {
+        'name': 'An updated Tag'
       };
-      let folder;
-      return Folder.findOne()
-        .then(_folder => {
-          folder = _folder;
-          updatedFolder.id = _folder.id;
+      let tag;
+      return Tag.findOne()
+        .then(_tag => {
+          tag = _tag;
+          updatedTag.id = _tag.id;
           return chai.request(app)
-            .put(`/api/folders/${updatedFolder.id}`)
-            .send(updatedFolder);
+            .put(`/api/tags/${updatedTag.id}`)
+            .send(updatedTag);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
           expect(res.body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
-          expect(res.body.id).to.equal(folder.id);
-          expect(res.body.name).to.equal(updatedFolder.name);
-          expect(new Date(res.body.createdAt)).to.eql(folder.createdAt);
+          expect(res.body.id).to.equal(tag.id);
+          expect(res.body.name).to.equal(updatedTag.name);
+          expect(new Date(res.body.createdAt)).to.eql(tag.createdAt);
           // expect item to have been updated
-          expect(new Date(res.body.updatedAt)).to.greaterThan(folder.updatedAt);
+          expect(new Date(res.body.updatedAt)).to.greaterThan(tag.updatedAt);
 
         });
     });
@@ -221,7 +215,7 @@ describe('Folders.test', function () {
         'name': 'Blah'
       };
       return chai.request(app)
-        .put('/api/folders/NOT-A-VALID-ID')
+        .put('/api/tags/NOT-A-VALID-ID')
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -235,7 +229,7 @@ describe('Folders.test', function () {
       };
       // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
-        .put('/api/folders/DOESNOTEXIST')
+        .put('/api/tags/DOESNOTEXIST')
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(404);
@@ -245,10 +239,10 @@ describe('Folders.test', function () {
     it('should return an error when missing "name" field', function () {
       const updateItem = {};
       let data;
-      return Folder.findOne()
+      return Tag.findOne()
         .then(_data => {
           data = _data;
-          return chai.request(app).put(`/api/folders/${data.id}`).send(updateItem);
+          return chai.request(app).put(`/api/tags/${data.id}`).send(updateItem);
         })
         .then(res => {
           expect(res).to.have.status(400);
@@ -259,43 +253,43 @@ describe('Folders.test', function () {
     });
 
     it('should return an error when given a duplicate name', function () {
-      return Folder.find().limit(2)
+      return Tag.find().limit(2)
         .then(results => {
           const [item1, item2] = results;
           item1.name = item2.name;
           return chai.request(app)
-            .put(`/api/folders/${item1.id}`)
+            .put(`/api/tags/${item1.id}`)
             .send(item1);
         })
         .then(res => {
           expect(res).to.have.status(400);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('The folder name already exists');
+          expect(res.body.message).to.equal('The tag name already exists');
         });
     });
 
   });
 
 
-  describe('DELETE /api/folders', function () {
+  describe('DELETE /api/tags', function () {
 
-    it('should delete a folder by id and respond with 204', function () {
+    it('should delete a tag by id and respond with 204', function () {
 
-      let folderToDelete;
+      let tagToDelete;
 
-      return Folder
+      return Tag
         .findOne()
-        .then(function (_folderToDelete) {
-          folderToDelete = _folderToDelete;
-          return chai.request(app).delete(`/api/folders/${folderToDelete.id}`);
+        .then(function (_tagToDelete) {
+          tagToDelete = _tagToDelete;
+          return chai.request(app).delete(`/api/tags/${tagToDelete.id}`);
         })
         .then(function (res) {
           expect(res).to.have.status(204);
-          return Folder.findById(folderToDelete.id);
+          return Tag.findById(tagToDelete.id);
         })
-        .then(function (_folderToDelete) {
-          expect(_folderToDelete).to.be.null;
+        .then(function (_tagToDelete) {
+          expect(_tagToDelete).to.be.null;
         });
     });
   });

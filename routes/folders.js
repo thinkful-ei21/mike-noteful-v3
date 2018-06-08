@@ -12,7 +12,7 @@ const Note = require('../models/note');
 
 router.get('/', (req,res,next) => {
   Folder.find()
-    .sort({ id:1} )
+    .sort({ name:1} )
     .then(results => {
       if(results) {
         res.json(results);

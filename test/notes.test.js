@@ -8,24 +8,26 @@ const mongoose = require('mongoose');
 // require app 
 const app = require('../server');
 
-//destructure the TEST_MONGODB_URI into a constant
-// and require config
-const {
-  TEST_MONGODB_URI
-} = require('../config');
+//destructure the TEST_MONGODB_URI into a constant and require config
+const { TEST_MONGODB_URI } = require('../config');
 
 // require note Mongoose model for Note
 const Note = require('../models/note');
 
-
 // require note Mongoose model for Folder
 const Folder = require('../models/folder');
+
+// require note Mongoose model for Folder
+const Tag = require('../models/tags');
 
 // require seed notes from seed data 
 const seedNotes = require('../db/seed/notes');
 
 // require seed folders from seed data 
 const seedFolders = require('../db/seed/folders');
+
+// require seed folders from seed data 
+const seedTags = require('../db/seed/tags');
 
 //configure expect as your assertion library and load chai-http with chai.use()
 const expect = chai.expect;
@@ -40,7 +42,15 @@ describe('Notes.tests', function () {
 
   //seed data runs before each test
   beforeEach(function () {
-    return Note.insertMany(seedNotes);
+   // return Note.insertMany(seedNotes);
+
+    return Promise.all([
+      Note.insertMany(seedNotes),
+      Folder.insertMany(seedFolders),
+      Tag.insertMany(seedTags),
+      Folder.createIndexes(),
+      Tag.createIndexes()
+    ]);
   });
 
   // drop database runs after each test
@@ -83,7 +93,7 @@ describe('Notes.tests', function () {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'folderId', 'tags', 'createdAt', 'updatedAt');
 
           //compare database results to API response
           expect(res.body.id).to.equal(testNote.id);
@@ -112,7 +122,7 @@ describe('Notes.tests', function () {
           expect(res).to.have.header('location');
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'folderId', 'tags', 'createdAt', 'updatedAt');
           // 2) then call the database
           return Note.findById(res.body.id);
         })
@@ -144,7 +154,7 @@ describe('Notes.tests', function () {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.all.keys('id', 'title', 'content', 'folderId', 'tags', 'createdAt', 'updatedAt');
           return Note.findById(res.body.id);
         })
         .then(function (note) {
