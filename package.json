@@ -9,7 +9,8 @@
 	"main": "server.js",
 	"scripts": {
 		"start": "node server.js",
-		"test": "cross-env NODE_ENV=test mocha --file test/server.js","cover": "nyc --reporter=lcov --reporter=text-summary npm test"
+		"test": "cross-env NODE_ENV=test mocha --file test/server.js",
+		"cover": "nyc --reporter=lcov --reporter=text-summary npm test"
 	},
 	"dependencies": {
 		"dotenv": "^6.0.0",
