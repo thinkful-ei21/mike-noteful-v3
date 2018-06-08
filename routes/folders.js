@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
 
 const Folder = require('../models/folder');
+const Note = require('../models/note');
 
 router.get('/', (req,res,next) => {
   Folder.find()
@@ -50,7 +51,7 @@ router.post('/', (req,res,next) => {
   const { name } = req.body;
 
   if(!name) {
-    const err = new Error('Missing `title` in request body');
+    const err = new Error('Missing `name` in request body');
     err.status = 400;
     return next(err);
   }
@@ -91,10 +92,10 @@ router.put('/:id', (req,res,next) => {
 
   const updatedFolder = { name };
 
-  Folder.findByIdAndUpdate(id, updatedFolder, { upsert:true, new:true })
+  Folder.findByIdAndUpdate(id, updatedFolder, { new:true })
     .then(results => {
       if(results) {
-        res.status(200).json(results);
+        res.json(results);
       } else {
         next();
       }

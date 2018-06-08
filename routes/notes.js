@@ -74,7 +74,6 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-
   const newNote = {title, content, folderId};
 
   const originalUrl = `http://${req.headers.host}/notes/${newNote.id}`;
@@ -87,6 +86,7 @@ router.post('/', (req, res, next) => {
       next(err);
     });
 });
+
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
@@ -112,7 +112,6 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-
   const updatedNote = { title, content, folderId };
 
   Note.findByIdAndUpdate(id, updatedNote, { upsert: true, new: true})
@@ -131,7 +130,6 @@ router.put('/:id', (req, res, next) => {
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
-
 
   // validate input 
   if (!mongoose.Types.ObjectId.isValid(id)) {
